@@ -19,7 +19,7 @@ Begin["`Private`"]
 PrintINV[verbose_, args___] := If[verbose, Print[args]];
 
 TestFunction[a_,b_] := Module[{aa=a,bb=b},
-	Return[aa+bb+2];
+	Return[aa+bb];
 ];
 
 ReadAndEvaluate[aPathName_String, aOptions___] :=
@@ -70,23 +70,26 @@ ReadAndEvaluate[aPathName_String, aOptions___] :=
    	localFunctions = {};
    
    	For[iLoop = 1, iLoop <= Length[fcontl], iLoop++,
-    		If[fcontl[[iLoop]] != "",
-      			expb = ToExpression[fcontl[[iLoop]], TraditionalForm];
-      			Fooa = Function[Evaluate[varnames], Evaluate[expb]];
-      			ErrFooa = 
-       Function[Evaluate[varnames], Evaluate[Sqrt[Plus @@ MapThread[
-            				(D[Fooa @@ varnames, #1]^2*#2^2) &, {varnames, 
-             errorlist}
-            			]]]];
-      			AppendTo[localFunctions, iLoop \[RightArrow] Fooa];
-      			errorIndex = 
-       Position[varnames, errorlist[[iLoop]] ] [[1]][[1]];
-      			For[jLoop = startOfData, jLoop <= Length[input], jLoop++,
-       				input[[jLoop]][[iLoop]] = Fooa @@ input[[jLoop]];
-       				input[[jLoop]][[errorIndex]] = ErrFooa @@ input[[jLoop]];
-       			];
-      		];
-    	];
+		If[fcontl[[iLoop]] != "",
+  			expb = ToExpression[fcontl[[iLoop]], TraditionalForm];
+  			Fooa = Function[Evaluate[varnames], Evaluate[expb]];
+  			ErrFooa = Function[Evaluate[varnames], Evaluate[
+  				Sqrt[Plus @@ MapThread[
+  					(D[Fooa @@ varnames, #1]^2*#2^2) &, {varnames, errorlist}
+        		]]
+        	]];
+  			AppendTo[localFunctions, iLoop \[RightArrow] Fooa];
+  			errorIndex = Position[varnames, errorlist[[iLoop]] ];
+  			
+  			For[jLoop = startOfData, jLoop <= Length[input], jLoop++,
+   				input[[jLoop]][[iLoop]] = Fooa @@ input[[jLoop]];
+   				
+   				If[ Length[errorIndex] == 1,
+   					input[[jLoop]][[errorIndex [[1]] [[1]] ]] = ErrFooa @@ input[[jLoop]];
+   				];
+   			];
+  		];
+	];
    	
    	(* Save results to spreadsheet *)
    	exportPath = 
