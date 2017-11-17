@@ -11,7 +11,9 @@ ReadAndEvaluate::fileNotfound = "Error: The given file path can not be opened.
 ReadAndEvaluate::fileWriteError = "Error: Failed to save results to spreadsheet!
 	Is the result file opened by another program?"
 	
-TestFunction ::usage = "asdffg"
+ReadAndEvaluate::version = "0.0.1"
+	
+TestFunction ::usage = "Test function"
 
 Begin["`Private`"]
 (* Implementation of the package *)
@@ -29,9 +31,10 @@ ReadAndEvaluate[aPathName_String, aOptions___] :=
    	argVerbose = Verbose /. {options} /. Verbose -> False;
    	argOpenXLS =  
     OpenResultFile /. {options} /. OpenResultFile -> True;
+    
+    PrintINV[argVerbose, " --- Running LabEval Script, Version ", ReadAndEvaluate::version, " --- "];
    	
-   	Print["Verbose: ", Verbose, "   OpenResult: ", OpenResult];
-   	Print["Options: <<",  options, ">>; Verbose: ", argVerbose, 
+   	PrintINV[argVerbose, "Options: <<",  options, ">>; Verbose: ", argVerbose, 
     "; openFile: ", argOpenXLS];
    	
    	(* Read spreadsheet file *)
@@ -40,8 +43,7 @@ ReadAndEvaluate[aPathName_String, aOptions___] :=
     		Message[ReadAndEvaluate::fileNotfound, Style[fullName, Red]];
     		Return[$Failed];
     	];
-   	PrintINV[argVerbose, "Imported file '", pathName, 
-    "' as spreadsheet"];
+   	PrintINV[argVerbose, "Imported file '", pathName, "' as spreadsheet"];
    	
    	(* Parse configuration info and extract data *)
    	firstColumn = rawInput[[2]][[1]][[2]];
