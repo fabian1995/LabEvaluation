@@ -22,6 +22,8 @@
 BeginPackage["LabEval`"]
 (* Exported symbols added here with SymbolName::usage *) 
 
+LabEvalUI::usage = "Create UI elements for easy access to LabEval functions"
+
 ReadAndEvaluate::usage = "Evaluates a spreadsheet"
 ReadAndEvaluate::fileNotfound = "Error: The given file path can not be opened.
 	Be sure to use absolut paths."
@@ -37,8 +39,23 @@ Begin["`Private`"]
 
 PrintINV[verbose_, args___] := If[verbose, Print[args]];
 
+LabEvalUI[] := Module[{}, 
+	Dynamic[pathName];
+	Dynamic[openFile];
+	Dynamic[argverbose];
+	Print["Input file: ", FileNameSetter[Dynamic[pathName]], "   ", Dynamic[pathName]];
+	Print["open result file: ", Checkbox[Dynamic[openFile]], "   ", Dynamic[openFile]];
+	Print["Extended output (for developers): ", Checkbox[Dynamic[argverbose]], "   ", Dynamic[argverbose]];
+	
+	Button["Auswerten",ReadAndEvaluate[pathName,
+	OpenResultFile -> openFile,
+	Verbose -> argverbose
+	]]
+];
+
 TestFunction[a_,b_] := Module[{aa=a,bb=b},
-	Return[aa+bb];
+	Print["We are in ",  Directory[]];
+	Return[NotebookDirectory[]];
 ];
 
 ReadAndEvaluate[aPathName_String, aOptions___] :=
@@ -46,8 +63,8 @@ ReadAndEvaluate[aPathName_String, aOptions___] :=
    	
    	(* Read additional arguments *)
    	argVerbose = Verbose /. {options} /. Verbose -> False;
-   	argOpenXLS =  
-    OpenResultFile /. {options} /. OpenResultFile -> True;
+   	argOpenXLS = OpenResultFile /. {options} /. OpenResultFile -> True;
+   	argReturnRes = ReturnResult /. {options} /. ReturnResult -> False;
     
     PrintINV[argVerbose, " --- Running LabEval Script, Version ", ReadAndEvaluate::version, " --- "];
    	
@@ -124,12 +141,20 @@ ReadAndEvaluate[aPathName_String, aOptions___] :=
     	SystemOpen[exportPath];,
     	Print["Your spreadsheet has been evaluated. Find the results in \n'", exportPath, "'"];
 	];
+	
+	PrintINV[argVerbose, " --- Finished LabEval Script --- "];
+	
+	(* Return result object if required *)
+	If[argReturnRes,
+		Return[input[[startOfData ;; , ;; ]] ];
+	];
 ];
 
 End[]
 
 Protect[Verbose]
 Protect[OpenResultFile]
+Protect[ReturnResult]
 
 EndPackage[]
 
