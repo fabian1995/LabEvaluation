@@ -43,13 +43,16 @@ LabEvalUI[] := Module[{},
 	Dynamic[pathName];
 	Dynamic[openFile];
 	Dynamic[argverbose];
-	Print["Input file: ", FileNameSetter[Dynamic[pathName]], "   ", Dynamic[pathName]];
-	Print["open result file: ", Checkbox[Dynamic[openFile]], "   ", Dynamic[openFile]];
+	Dynamic[argPrintFoo];
+	Print["Input file:       ", FileNameSetter[Dynamic[pathName]], "   ", Dynamic[pathName]];
+	Print["Open result file: ", Checkbox[Dynamic[openFile]], "   ", Dynamic[openFile]];
+	Print["Print Functions:  ", Checkbox[Dynamic[argPrintFoo]], "   ", Dynamic[argPrintFoo]];
 	Print["Extended output (for developers): ", Checkbox[Dynamic[argverbose]], "   ", Dynamic[argverbose]];
 	
 	Button["Auswerten",ReadAndEvaluate[pathName,
 	OpenResultFile -> openFile,
-	Verbose -> argverbose
+	Verbose -> argverbose,
+	PrintFunctions -> argPrintFoo
 	]]
 ];
 
@@ -65,6 +68,7 @@ ReadAndEvaluate[aPathName_String, aOptions___] :=
    	argVerbose = Verbose /. {options} /. Verbose -> False;
    	argOpenXLS = OpenResultFile /. {options} /. OpenResultFile -> True;
    	argReturnRes = ReturnResult /. {options} /. ReturnResult -> False;
+   	argPrintFoo = PrintFunctions /. {options} /. PrintFunctions -> False;
     
     PrintINV[argVerbose, " --- Running LabEval Script, Version ", ReadAndEvaluate::version, " --- "];
    	
@@ -114,6 +118,8 @@ ReadAndEvaluate[aPathName_String, aOptions___] :=
   					(D[Fooa @@ varnames, #1]^2*#2^2) &, {varnames, errorlist}
         		]]
         	]];
+        	If [argPrintFoo, Print["Function ", varnames[[iLoop]], " = ", expb//TraditionalForm ]];
+
   			AppendTo[localFunctions, iLoop \[RightArrow] Fooa];
   			errorIndex = Position[varnames, errorlist[[iLoop]] ];
   			
@@ -155,6 +161,7 @@ End[]
 Protect[Verbose]
 Protect[OpenResultFile]
 Protect[ReturnResult]
+Protect[PrintFunctions]
 
 EndPackage[]
 
